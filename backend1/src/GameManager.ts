@@ -1,4 +1,5 @@
 import { WebSocket } from "ws";
+import { INIT_GAME } from "./Message";
 
 export class GameManager {
     private games: Game[];
@@ -21,8 +22,16 @@ private users:WebSocket;
     private addHandler(socket:WebSocket) {
         socket.on("message",(data)=>{
             const message =  JSON.parse(data.toString());
-            if(message.type === "init_game"){
-                this.joinGame(socket);
+            if(message.type === INIT_GAME){
+                if(this.pendingUser){
+                    // start game
+                    const game = new Game (this.pendingUser,socket);
+                    this.games.push(game);
+                    this.pendingUser= null;
+                }
+                else{
+                    this.pendingUser = socket;
+                }
             }
         })
        
